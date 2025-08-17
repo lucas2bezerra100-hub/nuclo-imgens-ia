@@ -1,227 +1,329 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="pt-br">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Nuclo Imgens IA — Melhorar Qualidade de Foto</title>
-  <meta name="description" content="Nuclo Imgens IA — ferramenta simples para melhorar qualidade de fotos com opção de IA (local ou via API)." />
+  <meta name="description" content="Nuclo Imgens IA — ferramenta simples para melhorar a qualidade de fotos no navegador com upscaling e nitidez." />
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--accent:#7c3aed;--muted:#9ca3af;--glass: rgba(255,255,255,0.04)}
-    *{box-sizing:border-box}
-    body{font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; margin:0; background:linear-gradient(180deg,#071028 0%, #081325 60%); color:#e6eef8; min-height:100vh; display:flex; align-items:center; justify-content:center; padding:32px}
-    .container{width:100%;max-width:1100px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); border-radius:12px; padding:24px; box-shadow:0 8px 30px rgba(2,6,23,0.6);}
-    header{display:flex;align-items:center;gap:16px;margin-bottom:18px}
-    .logo{width:64px;height:64px;border-radius:12px;background:linear-gradient(135deg,var(--accent),#4338ca);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:20px}
-    h1{margin:0;font-size:20px}
-    p.lead{margin:4px 0 0;color:var(--muted)}
+    :root{
+      --bg: #0b0f14;
+      --card: #111823;
+      --muted: #93a1b3;
+      --text: #e8eef7;
+      --brand: #7c5cff;
+      --brand-2: #22d3ee;
+      --ok: #22c55e;
+      --warn: #f59e0b;
+    }
+    *{ box-sizing: border-box }
+    html,body{ margin:0; padding:0; background:radial-gradient(1200px 600px at 85% -10%, rgba(124,92,255,.25), rgba(124,92,255,0) 60%),
+                                  radial-gradient(900px 500px at 10% 110%, rgba(34,211,238,.20), rgba(34,211,238,0) 60%), var(--bg); color:var(--text); font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";}
+    a{ color:var(--brand-2); text-decoration: none }
+    a:hover{ text-decoration: underline }
+    .wrap{ max-width:1100px; margin:0 auto; padding:32px 16px }
 
-    .grid{display:grid;grid-template-columns:1fr 420px;gap:18px}
-    .card{background:var(--card); border-radius:10px;padding:16px;box-shadow:0 4px 18px rgba(2,6,23,0.6)}
+    header{
+      display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:24px;
+    }
+    .logo{ display:flex; align-items:center; gap:12px }
+    .logo .mark{ width:40px; height:40px; border-radius:12px; background:
+      conic-gradient(from 210deg, var(--brand), var(--brand-2));
+      box-shadow: 0 10px 30px rgba(124,92,255,.35), 0 2px 10px rgba(34,211,238,.25);
+    }
+    .logo h1{ margin:0; font-size:clamp(18px, 2.5vw, 24px); letter-spacing:.3px }
+    .subtitle{ color:var(--muted); font-size:14px }
 
-    .uploader{display:flex;flex-direction:column;gap:12px}
-    input[type=file]{display:block}
-    .controls{display:flex;gap:8px;flex-wrap:wrap}
-    button{background:var(--accent);border:none;padding:10px 14px;border-radius:8px;color:white;font-weight:600;cursor:pointer}
-    button.ghost{background:transparent;border:1px solid rgba(255,255,255,0.06)}
-    .preview{display:flex;flex-direction:column;align-items:center;gap:10px}
-    .preview img{max-width:100%;border-radius:8px;box-shadow:0 6px 20px rgba(2,6,23,0.6)}
-    canvas{max-width:100%;border-radius:8px}
-    footer.small{color:var(--muted);font-size:13px;margin-top:10px}
+    .hero{ display:grid; grid-template-columns: 1.1fr .9fr; gap:24px; align-items:stretch; }
+    @media (max-width: 900px){ .hero{ grid-template-columns: 1fr; } }
 
-    @media (max-width:980px){.grid{grid-template-columns:1fr} .container{padding:16px}}
+    .card{ background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.00)); border: 1px solid rgba(255,255,255,.08); border-radius: 20px; padding: 18px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .card h2{ margin: 6px 0 14px; font-size:18px; color:#eaf1ff }
 
-    .progress-container{width:100%;background:rgba(255,255,255,0.05);border-radius:6px;height:12px;margin-top:8px;overflow:hidden}
-    .progress-bar{height:100%;width:0%;background:var(--accent);transition:width 0.2s}
+    .uploader{ border:1.5px dashed rgba(255,255,255,.16); border-radius:16px; padding:18px; display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center; text-align:center; min-height: 220px; background: rgba(255,255,255,.02); }
+    .uploader input{ display:none }
+    .uploader .btn{ cursor:pointer; padding:10px 14px; background:linear-gradient(90deg, var(--brand), var(--brand-2)); border:none; border-radius:12px; color:#0b0f14; font-weight:700; letter-spacing:.2px; box-shadow: 0 6px 24px rgba(124,92,255,.35); }
+    .uploader small{ color:var(--muted) }
+
+    .controls{ display:grid; grid-template-columns: repeat(4, 1fr); gap:12px; margin-top:10px }
+    @media (max-width: 640px){ .controls{ grid-template-columns: 1fr 1fr } }
+    .control{ background:var(--card); border:1px solid rgba(255,255,255,.08); border-radius:14px; padding:12px }
+    .control label{ display:block; font-size:12px; color:var(--muted); margin-bottom:6px }
+    .control input[type="range"]{ width:100% }
+    .select{ display:flex; gap:8px }
+    .pill{ flex:1; display:inline-flex; align-items:center; justify-content:center; border-radius:10px; padding:8px 10px; border:1px solid rgba(255,255,255,.09); background:#0e1622; cursor:pointer; user-select:none }
+    .pill.active{ outline:2px solid rgba(124,92,255,.55); background: #131f2e }
+
+    .preview{ display:grid; grid-template-columns: 1fr 1fr; gap:16px }
+    @media (max-width: 900px){ .preview{ grid-template-columns: 1fr } }
+    .pane{ position:relative; background: #0c131d; border:1px solid rgba(255,255,255,.08); border-radius: 16px; overflow:hidden; min-height:280px; display:flex; align-items:center; justify-content:center }
+    .pane canvas, .pane img{ max-width:100%; max-height: 70vh; width:auto; height:auto; display:block }
+    .pane .badge{ position:absolute; top:10px; left:10px; font-size:12px; background:rgba(0,0,0,.55); border:1px solid rgba(255,255,255,.15); padding:6px 10px; border-radius:999px }
+
+    .actions{ display:flex; gap:10px; flex-wrap:wrap; margin-top:14px }
+    .btn{ cursor:pointer; padding:10px 14px; border-radius:12px; border:1px solid rgba(255,255,255,.1); background:#111a28; color:var(--text); font-weight:600 }
+    .btn.primary{ background: linear-gradient(90deg, var(--brand), var(--brand-2)); color:#0b0f14; border:none }
+    .btn.secondary{ background:#0f1724 }
+    .btn:disabled{ opacity:.6; cursor:not-allowed }
+
+    footer{ margin-top:28px; color:var(--muted); font-size:13px; display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+    .tip{ background: #0e1622; border:1px solid rgba(255,255,255,.08); padding:10px 12px; border-radius:10px }
   </style>
 </head>
 <body>
-  <main class="container">
+  <div class="wrap">
     <header>
-      <div class="logo">Nú</div>
-      <div>
-        <h1>Nuclo Imgens IA — Melhorar Qualidade de Foto</h1>
-        <p class="lead">Suba uma foto, veja a pré-visualização e experimente uma melhoria rápida (local ou via IA online).</p>
+      <div class="logo">
+        <div class="mark" aria-hidden="true"></div>
+        <div>
+          <h1>Nuclo Imgens IA</h1>
+          <div class="subtitle">Melhore a qualidade da sua foto com upscaling + nitidez direto no navegador.</div>
+        </div>
       </div>
     </header>
 
-    <section class="grid">
-      <section class="card">
-        <div class="uploader">
-          <label for="file">Escolha uma imagem (JPEG/PNG)</label>
-          <input id="file" type="file" accept="image/*" />
-
-          <div class="controls">
-            <button id="btnImproveLocal">Melhorar (Local)</button>
-            <button id="btnImproveApi" class="ghost">Melhorar (Via API)</button>
-            <button id="btnDownload" class="ghost" disabled>Baixar imagem</button>
-            <button id="btnReset" class="ghost">Limpar</button>
+    <section class="hero">
+      <div class="card">
+        <h2>1) Envie uma imagem</h2>
+        <label class="uploader" id="drop">
+          <input type="file" id="file" accept="image/*" />
+          <div>
+            <strong>Solte a imagem aqui</strong><br/>
+            <small>ou clique para escolher um arquivo</small>
           </div>
+        </label>
 
-          <div class="progress-container" style="display:none"><div class="progress-bar" id="progressBar"></div></div>
+        <div class="controls">
+          <div class="control">
+            <label>Escala (upscale)</label>
+            <div class="select" role="group" aria-label="Escolher escala">
+              <div class="pill active" data-scale="1">1×</div>
+              <div class="pill" data-scale="2">2×</div>
+              <div class="pill" data-scale="4">4×</div>
+            </div>
+          </div>
+          <div class="control">
+            <label>Nitidez</label>
+            <input type="range" min="0" max="100" value="35" id="sharpen" />
+          </div>
+          <div class="control">
+            <label>Reduzir ruído</label>
+            <input type="range" min="0" max="100" value="10" id="denoise" />
+          </div>
+          <div class="control">
+            <label>Formato</label>
+            <div class="select">
+              <div class="pill active" data-format="image/png">PNG</div>
+              <div class="pill" data-format="image/jpeg">JPG</div>
+              <div class="pill" data-format="image/webp">WEBP</div>
+            </div>
+          </div>
         </div>
-      </section>
 
-      <aside class="card">
+        <div class="actions">
+          <button class="btn" id="reset" disabled>Resetar</button>
+          <button class="btn secondary" id="previewBtn" disabled>Pré-visualizar</button>
+          <button class="btn primary" id="process" disabled>Melhorar imagem</button>
+          <a class="btn" id="download" download style="display:none">Baixar imagem</a>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>2) Antes / Depois</h2>
         <div class="preview">
-          <div id="placeholder">Nenhuma imagem carregada</div>
-          <img id="previewImg" alt="preview" style="display:none"/>
-          <canvas id="canvas" style="display:none"></canvas>
+          <div class="pane" id="paneBefore"><span class="badge">Original</span><img id="imgBefore" alt="Prévia original"/></div>
+          <div class="pane" id="paneAfter"><span class="badge">Processada</span><canvas id="canvasOut"></canvas></div>
         </div>
-        <div style="width:100%;margin-top:10px;color:var(--muted);font-size:13px">
-          <strong>Nota:</strong> o botão "Melhorar (Local)" aplica upscaling simples + nitidez. O "Via API" envia para o backend Node/Express com IA.
-        </div>
-      </aside>
+      </div>
     </section>
 
-  </main>
+    <footer>
+      <div class="tip">Dica: para melhor resultado, use escala 2× e nitidez entre 25–50. Ajuste o ruído se a imagem estiver “granulada”.</div>
+      <div>© <span id="year"></span> Nuclo Imgens IA • roda 100% local, sem subir sua foto.</div>
+    </footer>
+  </div>
 
   <script>
     const fileInput = document.getElementById('file');
-    const previewImg = document.getElementById('previewImg');
-    const canvas = document.getElementById('canvas');
-    const placeholder = document.getElementById('placeholder');
-    const btnImproveLocal = document.getElementById('btnImproveLocal');
-    const btnImproveApi = document.getElementById('btnImproveApi');
-    const btnDownload = document.getElementById('btnDownload');
-    const btnReset = document.getElementById('btnReset');
-    const progressContainer = document.querySelector('.progress-container');
-    const progressBar = document.getElementById('progressBar');
+    const drop = document.getElementById('drop');
+    const imgBefore = document.getElementById('imgBefore');
+    const canvasOut = document.getElementById('canvasOut');
+    const ctxOut = canvasOut.getContext('2d');
+    const sharpenRange = document.getElementById('sharpen');
+    const denoiseRange = document.getElementById('denoise');
+    const processBtn = document.getElementById('process');
+    const previewBtn = document.getElementById('previewBtn');
+    const downloadA = document.getElementById('download');
+    const resetBtn = document.getElementById('reset');
+    const year = document.getElementById('year');
+    year.textContent = new Date().getFullYear();
 
-    let originalImage = null;
+    let originalImageBitmap = null;
+    let scale = 1;
+    let format = 'image/png';
 
-    fileInput.addEventListener('change', async (e)=>{
-      const f = e.target.files && e.target.files[0];
-      if(!f) return clearAll();
-      const url = URL.createObjectURL(f);
-      previewImg.src = url;
-      previewImg.style.display = 'block';
-      canvas.style.display = 'none';
-      placeholder.style.display = 'none';
-      originalImage = await loadImage(url);
-      btnDownload.disabled = false;
-    });
+    // UI pills handling
+    function setupPills(){
+      document.querySelectorAll('[data-scale]').forEach(p => {
+        p.addEventListener('click', () => {
+          document.querySelectorAll('[data-scale]').forEach(el=>el.classList.remove('active'));
+          p.classList.add('active');
+          scale = parseFloat(p.getAttribute('data-scale'));
+          if(originalImageBitmap) enableActions();
+        });
+      });
+      document.querySelectorAll('[data-format]').forEach(p => {
+        p.addEventListener('click', () => {
+          document.querySelectorAll('[data-format]').forEach(el=>el.classList.remove('active'));
+          p.classList.add('active');
+          format = p.getAttribute('data-format');
+          if(originalImageBitmap) enableActions();
+        });
+      });
+    }
+    setupPills();
 
-    function loadImage(src){
-      return new Promise((res, rej)=>{
-        const img = new Image();
-        img.onload = ()=>res(img);
-        img.onerror = rej;
-        img.src = src;
-      })
+    // Drag & drop
+    ;['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.borderColor = 'rgba(124,92,255,.6)'; }))
+    ;['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e=>{ e.preventDefault(); drop.style.borderColor = 'rgba(255,255,255,.16)'; }))
+    drop.addEventListener('drop', e=>{ if(e.dataTransfer.files && e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]); })
+    drop.addEventListener('click', ()=> fileInput.click());
+    fileInput.addEventListener('change', (e)=>{ if(e.target.files[0]) handleFile(e.target.files[0]); });
+
+    async function handleFile(file){
+      const url = URL.createObjectURL(file);
+      imgBefore.src = url;
+      originalImageBitmap = await createImageBitmap(file);
+      enableActions();
     }
 
-    function clearAll(){
-      previewImg.src = '';
-      previewImg.style.display = 'none';
-      canvas.style.display = 'none';
-      placeholder.style.display = 'block';
-      btnDownload.disabled = true;
-      fileInput.value = '';
-      originalImage = null;
-      progressContainer.style.display = 'none';
-      progressBar.style.width = '0%';
+    function enableActions(){
+      processBtn.disabled = false;
+      previewBtn.disabled = false;
+      resetBtn.disabled = false;
+      downloadA.style.display = 'none';
     }
 
-    btnReset.addEventListener('click', clearAll);
-
-    btnImproveLocal.addEventListener('click', ()=>{
-      if(!originalImage) return alert('Carregue uma imagem primeiro.');
-      const factor = 2;
-      const w = originalImage.width * factor;
-      const h = originalImage.height * factor;
-      canvas.width = w;
-      canvas.height = h;
-      canvas.style.display = 'block';
-      const ctx = canvas.getContext('2d');
-      ctx.imageSmoothingEnabled = true;
-      ctx.imageSmoothingQuality = 'high';
-      ctx.drawImage(originalImage, 0, 0, w, h);
-      const imageData = ctx.getImageData(0,0,w,h);
-      const sharpened = convolveSharpen(imageData);
-      ctx.putImageData(sharpened,0,0);
-      previewImg.style.display = 'none';
+    resetBtn.addEventListener('click', ()=>{
+      imgBefore.src = '';
+      originalImageBitmap = null;
+      processBtn.disabled = true;
+      previewBtn.disabled = true;
+      resetBtn.disabled = true;
+      canvasOut.width = 0; canvasOut.height = 0;
+      downloadA.style.display = 'none';
     });
 
-    btnImproveApi.addEventListener('click', async ()=>{
-      if(!originalImage) return alert('Carregue uma imagem primeiro.');
-      progressContainer.style.display = 'block';
-      progressBar.style.width = '10%';
-
-      const tempCanvas = document.createElement('canvas');
-      tempCanvas.width = originalImage.width;
-      tempCanvas.height = originalImage.height;
-      const tctx = tempCanvas.getContext('2d');
-      tctx.drawImage(originalImage,0,0);
-
-      tempCanvas.toBlob(async (blob)=>{
-        if(!blob) return alert('Erro ao ler imagem');
-        try{
-          btnImproveApi.innerText = 'Enviando...';
-          const form = new FormData();
-          form.append('image', blob, 'upload.png');
-
-          const res = await fetch('/api/enhance', { method:'POST', body: form });
-          if(!res.ok) throw new Error('Resposta do servidor: ' + res.status);
-          const resBlob = await res.blob();
-          const url = URL.createObjectURL(resBlob);
-          const img = await loadImage(url);
-          canvas.width = img.width;
-          canvas.height = img.height;
-          canvas.style.display = 'block';
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img,0,0);
-          previewImg.style.display = 'none';
-          progressBar.style.width = '100%';
-        }catch(err){
-          alert('Falha no envio para a API. ' + err.message);
-          progressBar.style.width = '0%';
-        }finally{
-          btnImproveApi.innerText = 'Melhorar (Via API)';
-        }
-      }, 'image/png');
+    previewBtn.addEventListener('click', ()=>{
+      if(!originalImageBitmap) return;
+      processImage(false);
     });
 
-    btnDownload.addEventListener('click', ()=>{
-      const a = document.createElement('a');
-      if(canvas.style.display !== 'none'){
-        a.href = canvas.toDataURL('image/png');
-        a.download = 'nuclo-enhanced.png';
-      } else if(previewImg.src){
-        a.href = previewImg.src;
-        a.download = 'nuclo-original.png';
-      } else return;
-      a.click();
+    processBtn.addEventListener('click', ()=>{
+      if(!originalImageBitmap) return;
+      processImage(true);
     });
 
-    function convolveSharpen(imageData){
-      const w = imageData.width; const h = imageData.height;
-      const src = imageData.data; const dst = new Uint8ClampedArray(src.length);
-      const kernel = [ 0, -1, 0, -1, 5, -1, 0, -1, 0 ];
-      const ksize = 3; const half = 1;
-      for(let y=0;y<h;y++){
-        for(let x=0;x<w;x++){
-          let r=0,g=0,b=0;
-          for(let ky=-half; ky<=half; ky++){
-            for(let kx=-half; kx<=half; kx++){
-              const ix = Math.min(w-1, Math.max(0, x+kx));
-              const iy = Math.min(h-1, Math.max(0, y+ky));
-              const i = (iy*w + ix) * 4;
-              const kval = kernel[(ky+half)*ksize + (kx+half)];
-              r += src[i] * kval;
-              g += src[i+1] * kval;
-              b += src[i+2] * kval;
+    function clamp(v, min, max){ return Math.max(min, Math.min(max, v)); }
+
+    function convolve(srcData, width, height, kernel, factor=1, bias=0){
+      const w = width, h = height;
+      const dst = new ImageData(w, h);
+      const s = srcData.data, d = dst.data;
+      const side = Math.round(Math.sqrt(kernel.length));
+      const half = Math.floor(side/2);
+      for(let y=0; y<h; y++){
+        for(let x=0; x<w; x++){
+          let r=0,g=0,b=0,a=0;
+          for(let ky=0; ky<side; ky++){
+            for(let kx=0; kx<side; kx++){
+              const tx = clamp(x + kx - half, 0, w-1);
+              const ty = clamp(y + ky - half, 0, h-1);
+              const si = (ty*w + tx)*4;
+              const kv = kernel[ky*side + kx];
+              r += s[si] * kv; g += s[si+1] * kv; b += s[si+2] * kv; a += s[si+3] * kv;
             }
           }
           const di = (y*w + x)*4;
-          dst[di] = clamp(r);
-          dst[di+1] = clamp(g);
-          dst[di+2] = clamp(b);
-          dst[di+3] = src[di+3];
+          d[di] = clamp(factor*r + bias, 0, 255);
+          d[di+1] = clamp(factor*g + bias, 0, 255);
+          d[di+2] = clamp(factor*b + bias, 0, 255);
+          d[di+3] = clamp(factor*a + bias, 0, 255);
         }
       }
-      return new ImageData(dst, w, h);
+      return dst;
     }
-    function clamp(v){ return Math.max(0, Math.min(255, Math.round(v))); }
+
+    function blend(a, b, t){
+      // linear blend between two ImageData of same size
+      const out = new ImageData(a.width, a.height);
+      const ad = a.data, bd = b.data, od = out.data;
+      for(let i=0;i<od.length;i+=4){
+        od[i]   = ad[i]*(1-t)   + bd[i]*t;
+        od[i+1] = ad[i+1]*(1-t) + bd[i+1]*t;
+        od[i+2] = ad[i+2]*(1-t) + bd[i+2]*t;
+        od[i+3] = 255;
+      }
+      return out;
+    }
+
+    function boxBlur(src, times){
+      if(times<=0) return src;
+      const kernel = [1,1,1,1,1,1,1,1,1].map(()=>1/9);
+      let cur = src;
+      for(let i=0;i<times;i++) cur = convolve(cur, cur.width, cur.height, kernel, 1, 0);
+      return cur;
+    }
+
+    function applySharpen(src, strength){
+      // strength 0..1
+      const k = [ 0,-1, 0,
+                 -1, 5, -1,
+                  0,-1, 0 ];
+      const sharp = convolve(src, src.width, src.height, k, 1, 0);
+      return blend(src, sharp, strength);
+    }
+
+    function processImage(finalize){
+      const up = Number(scale) || 1;
+      const denoise = Number(denoiseRange.value) / 100; // 0..1
+      const sharpen = Number(sharpenRange.value) / 100; // 0..1
+
+      const targetW = Math.round(originalImageBitmap.width * up);
+      const targetH = Math.round(originalImageBitmap.height * up);
+      canvasOut.width = targetW; canvasOut.height = targetH;
+
+      // High-quality upscale
+      ctxOut.imageSmoothingEnabled = true;
+      ctxOut.imageSmoothingQuality = 'high';
+      ctxOut.clearRect(0,0,targetW,targetH);
+      ctxOut.drawImage(originalImageBitmap, 0,0, targetW, targetH);
+
+      // Read back and run simple filters (local, not IA real, mas ajuda)
+      let img = ctxOut.getImageData(0,0,targetW,targetH);
+
+      if(denoise > 0){
+        const passes = Math.round(denoise * 2); // 0..2 passes
+        img = boxBlur(img, passes);
+      }
+
+      if(sharpen > 0){
+        img = applySharpen(img, clamp(sharpen, 0, 1));
+      }
+
+      ctxOut.putImageData(img, 0, 0);
+
+      // Prepare download
+      const mime = format;
+      const quality = mime === 'image/jpeg' ? 0.92 : 0.98;
+      canvasOut.toBlob((blob)=>{
+        if(!blob) return;
+        const url = URL.createObjectURL(blob);
+        downloadA.href = url;
+        downloadA.download = `nuclo-imgens-ia-${Date.now()}.${mime.split('/')[1]}`;
+        downloadA.style.display = 'inline-flex';
+      }, mime, quality);
+    }
   </script>
 </body>
 </html>
